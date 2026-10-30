@@ -1,0 +1,6 @@
+{
+  "name": "مدیریت پروژه و مالی",
+  "description": "نرم‌افزار جامع مدیریت پروژه‌ها، کارفرمایان، دریافتی‌ها و روزهای کاری با سبک Glassmorphism",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

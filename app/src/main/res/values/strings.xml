@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">مدیریت پروژه و مالی</string>
+    <string name="dashboard">داشبورد</string>
+    <string name="projects">پروژه‌ها</string>
+    <string name="clients">کارفرمایان</string>
+    <string name="receipts">دریافتی‌ها</string>
+    <string name="workdays">روزهای کاری</string>
+    <string name="settings">تنظیمات</string>
+</resources>
