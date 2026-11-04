@@ -76,6 +76,7 @@ fun ReceiptsScreen(
 
     var showDialog by remember { mutableStateOf(false) }
     var editingReceipt by remember { mutableStateOf<ReceiptEntity?>(null) }
+    var openReceiptId by remember { mutableStateOf<Long?>(null) }
 
     var amountInput by remember { mutableStateOf("") }
     var dateInput by remember { mutableStateOf("") }
@@ -370,8 +371,16 @@ fun ReceiptsScreen(
                     val projTitle = receipt.projectId?.let { projectMap[it]?.title }
 
                     SwipeableListItem(
-                        onEdit = { openEditDialog(receipt) },
-                        onDelete = { viewModel.deleteReceipt(receipt) },
+                        isOpen = (openReceiptId == receipt.id),
+                        onOpenChange = { isOpen -> openReceiptId = if (isOpen) receipt.id else null },
+                        onEdit = {
+                            openReceiptId = null
+                            openEditDialog(receipt)
+                        },
+                        onDelete = {
+                            openReceiptId = null
+                            viewModel.deleteReceipt(receipt)
+                        },
                         deleteConfirmTitle = "حذف دریافتی",
                         deleteConfirmMessage = "آیا از حذف این دریافتی به مبلغ ${NumberFormatUtils.formatToman(receipt.amount)} اطمینان دارید؟"
                     ) {

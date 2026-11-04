@@ -80,6 +80,7 @@ fun ProjectsScreen(
     val tokens = LocalGlassTokens.current
 
     var selectedStatusFilter by remember { mutableStateOf("ALL") }
+    var openProjectId by remember { mutableStateOf<Long?>(null) }
 
     // Dialog state for add/edit project
     var showDialog by remember { mutableStateOf(false) }
@@ -549,8 +550,16 @@ fun ProjectsScreen(
                     val client = clientMap[project.clientId]
 
                     SwipeableListItem(
-                        onEdit = { openEditDialog(project) },
-                        onDelete = { viewModel.deleteProject(project) },
+                        isOpen = (openProjectId == project.id),
+                        onOpenChange = { isOpen -> openProjectId = if (isOpen) project.id else null },
+                        onEdit = {
+                            openProjectId = null
+                            openEditDialog(project)
+                        },
+                        onDelete = {
+                            openProjectId = null
+                            viewModel.deleteProject(project)
+                        },
                         deleteConfirmTitle = "حذف پروژه",
                         deleteConfirmMessage = "آیا از حذف پروژه «${project.title}» اطمینان دارید؟ اطلاعات حذف شده قابل بازگشت نیستند."
                     ) {

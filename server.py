@@ -5,9 +5,9 @@ import urllib.parse
 
 PORT = 3000
 RELEASES_DIR = "/app/applet/releases"
-APK_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.0.apk")
-ZIP_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.0-apk.zip")
-BIN_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.0.bin")
+APK_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.1.apk")
+ZIP_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.1-apk.zip")
+BIN_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.1.bin")
 
 HTML_PAGE = """<!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -99,7 +99,7 @@ HTML_PAGE = """<!DOCTYPE html>
 </head>
 <body>
     <div class="card">
-        <div class="badge">نسخه ۱.۰.۰ آماده نصب</div>
+        <div class="badge">نسخه ۱.۰.۱ آماده نصب (با اصلاح کامل Swipe Actions)</div>
         <h1>مدیریت پروژه و مالی</h1>
         <p>نرم‌افزار جامع مدیریت پروژه‌ها، کارفرمایان و دریافتی‌ها با طراحی مدرن Glassmorphism و تقویم شمسی</p>
         

@@ -69,6 +69,7 @@ fun ClientsScreen(
     var clientName by remember { mutableStateOf("") }
     var clientPhone by remember { mutableStateOf("") }
     var clientAddress by remember { mutableStateOf("") }
+    var openClientId by remember { mutableStateOf<Long?>(null) }
 
     val filteredClients = remember(clients, searchQuery) {
         if (searchQuery.isBlank()) {
@@ -303,8 +304,16 @@ fun ClientsScreen(
             } else {
                 items(filteredClients, key = { it.id }) { client ->
                     SwipeableListItem(
-                        onEdit = { openEditDialog(client) },
-                        onDelete = { viewModel.deleteClient(client) },
+                        isOpen = (openClientId == client.id),
+                        onOpenChange = { isOpen -> openClientId = if (isOpen) client.id else null },
+                        onEdit = {
+                            openClientId = null
+                            openEditDialog(client)
+                        },
+                        onDelete = {
+                            openClientId = null
+                            viewModel.deleteClient(client)
+                        },
                         deleteConfirmTitle = "حذف کارفرما",
                         deleteConfirmMessage = "آیا از حذف «${client.name}» اطمینان دارید؟ پروژه‌ها و دریافتی‌های متصل به این کارفرما حفظ خواهند شد."
                     ) {

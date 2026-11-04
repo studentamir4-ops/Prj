@@ -37,11 +37,14 @@ import com.example.data.model.WorkdayEntity
 import com.example.ui.components.GlassBadge
 import com.example.ui.components.GlassCard
 import com.example.ui.components.PersianCalendarView
+import com.example.ui.components.SwipeableListItem
 import com.example.ui.theme.ErrorRed
 import com.example.ui.theme.LocalGlassTokens
 import com.example.ui.theme.SuccessGreen
 import com.example.util.PersianDateUtils
 import com.example.viewmodel.MainViewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @Composable
 fun WorkdaysScreen(
@@ -52,6 +55,7 @@ fun WorkdaysScreen(
     val calendarYear by viewModel.calendarYear.collectAsState()
     val calendarMonth by viewModel.calendarMonth.collectAsState()
     val tokens = LocalGlassTokens.current
+    var openWorkdayId by remember { mutableStateOf<Long?>(null) }
 
     // Filter workdays for the currently viewed month
     val currentMonthWorkdays = remember(workdays, calendarYear, calendarMonth) {
@@ -158,10 +162,22 @@ fun WorkdaysScreen(
             }
         } else {
             items(currentMonthWorkdays, key = { it.id }) { workday ->
-                WorkdayRowItem(
-                    workday = workday,
-                    onDelete = { viewModel.toggleWorkday(workday.year, workday.month, workday.day) }
-                )
+                SwipeableListItem(
+                    isOpen = (openWorkdayId == workday.id),
+                    onOpenChange = { isOpen -> openWorkdayId = if (isOpen) workday.id else null },
+                    onEdit = null,
+                    onDelete = {
+                        openWorkdayId = null
+                        viewModel.toggleWorkday(workday.year, workday.month, workday.day)
+                    },
+                    deleteConfirmTitle = "حذف روز کاری",
+                    deleteConfirmMessage = "آیا از حذف روز کاری ${workday.solarDate} اطمینان دارید؟"
+                ) {
+                    WorkdayRowItem(
+                        workday = workday,
+                        onDelete = { viewModel.toggleWorkday(workday.year, workday.month, workday.day) }
+                    )
+                }
             }
         }
     }
