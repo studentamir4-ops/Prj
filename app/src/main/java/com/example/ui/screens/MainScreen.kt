@@ -103,7 +103,7 @@ fun MainScreen(viewModel: MainViewModel) {
                     TopAppBar(
                         title = {
                             Text(
-                                text = "مدیریت پروژه و مالی",
+                                text = "حسابداری لوله کشی",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface

@@ -1,6 +1,6 @@
 {
-  "name": "مدیریت پروژه و مالی",
-  "description": "نرم‌افزار جامع مدیریت پروژه‌ها، کارفرمایان، دریافتی‌ها و روزهای کاری با سبک Glassmorphism",
+  "name": "حسابداری لوله کشی",
+  "description": "نرم‌افزار جامع مدیریت حسابداری پروژه‌های لوله‌کشی و تاسیسات، کارفرمایان، دریافتی‌ها و روزهای کاری با طراحی شیشه‌ای",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

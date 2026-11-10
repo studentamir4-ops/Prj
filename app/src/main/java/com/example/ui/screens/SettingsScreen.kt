@@ -3,7 +3,11 @@ package com.example.ui.screens
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,18 +23,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Plumbing
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -41,6 +50,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,11 +63,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.components.GlassCard
 import com.example.ui.theme.LocalGlassTokens
 import com.example.ui.theme.SuccessGreen
+import com.example.ui.theme.ThemePalette
 import com.example.viewmodel.MainViewModel
 
 @Composable
@@ -66,6 +78,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val isDarkMode by viewModel.isDarkMode.collectAsState()
+    val selectedPalette by viewModel.selectedThemePalette.collectAsState()
     val tokens = LocalGlassTokens.current
     val context = LocalContext.current
 
@@ -73,6 +86,17 @@ fun SettingsScreen(
     var backupJsonContent by remember { mutableStateOf("") }
     var showRestoreDialog by remember { mutableStateOf(false) }
     var restoreInputJson by remember { mutableStateOf("") }
+
+    // Parsed preview for restore JSON
+    val restoreStats by remember(restoreInputJson) {
+        derivedStateOf {
+            if (restoreInputJson.isNotBlank()) {
+                viewModel.parseBackupStats(restoreInputJson)
+            } else {
+                null
+            }
+        }
+    }
 
     // Backup Output Dialog
     if (showBackupDialog) {
@@ -94,14 +118,14 @@ fun SettingsScreen(
                         .padding(20.dp)
                 ) {
                     Text(
-                        text = "نسخه پشتیبان از کل اطلاعات",
+                        text = "تهیه نسخه پشتیبان (Backup)",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "متن زیر شامل کلیه پروژه‌ها، کارفرمایان، دریافتی‌ها و روزهای کاری شماست. می‌توانید آن را کپی و ذخیره کنید:",
+                        text = "نسخه پشتیبان شامل کلیه پروژه‌های لوله‌کشی، کارفرمایان، مبالغ دریافتی و روزهای کاری است. می‌توانید آن را ذخیره یا به اشتراک بگذارید:",
                         style = MaterialTheme.typography.bodySmall,
                         color = tokens.textMuted
                     )
@@ -111,7 +135,7 @@ fun SettingsScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 240.dp)
+                            .heightIn(max = 200.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(tokens.glassSurfaceVariant.copy(alpha = 0.5f))
                             .padding(12.dp)
@@ -119,7 +143,7 @@ fun SettingsScreen(
                     ) {
                         Text(
                             text = backupJsonContent,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -128,29 +152,56 @@ fun SettingsScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Share Intent
                         Button(
                             onClick = {
+                                val sendIntent: Intent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, backupJsonContent)
+                                    putExtra(Intent.EXTRA_TITLE, "پشتیبان حسابداری لوله کشی")
+                                    type = "text/plain"
+                                }
+                                val shareIntent = Intent.createChooser(sendIntent, "ارسال نسخه پشتیبان")
+                                context.startActivity(shareIntent)
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("share_backup_button")
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("اشتراک‌گذاری")
+                        }
+
+                        // Copy to Clipboard
+                        OutlinedButton(
+                            onClick = {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                val clip = ClipData.newPlainText("ProjectFinanceBackup", backupJsonContent)
+                                val clip = ClipData.newPlainText("PlumbingAccountingBackup", backupJsonContent)
                                 clipboard.setPrimaryClip(clip)
                             },
                             shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.testTag("copy_backup_button")
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("copy_backup_button")
                         ) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("کپی در کلیپ‌بورد")
+                            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("کپی متن")
                         }
+                    }
 
-                        OutlinedButton(
-                            onClick = { showBackupDialog = false },
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text("بستن")
-                        }
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = { showBackupDialog = false },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("بستن")
                     }
                 }
             }
@@ -177,14 +228,14 @@ fun SettingsScreen(
                         .padding(20.dp)
                 ) {
                     Text(
-                        text = "بازیابی اطلاعات از فایل پشتیبان",
+                        text = "بازیابی اطلاعات (Restore)",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "کد JSON نسخه پشتیبان را در کادر زیر وارد کنید. اطلاعات موجود حفظ شده و اطلاعات پشتیبان به پایگاه داده اضافه خواهند شد:",
+                        text = "متن JSON فایل پشتیبان را در کادر زیر وارد کنید. اطلاعات معتبر شناسایی شده به داده‌های موجود شما افزوده خواهند شد:",
                         style = MaterialTheme.typography.bodySmall,
                         color = tokens.textMuted
                     )
@@ -194,11 +245,11 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = restoreInputJson,
                         onValueChange = { restoreInputJson = it },
-                        placeholder = { Text("متن JSON پشتیبان را اینجا جای‌گذاری (Paste) کنید...") },
-                        maxLines = 8,
+                        placeholder = { Text("متن JSON نسخه پشتیبان را اینجا جای‌گذاری (Paste) کنید...") },
+                        maxLines = 6,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp)
+                            .height(150.dp)
                             .testTag("restore_json_input"),
                         shape = RoundedCornerShape(14.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -206,6 +257,42 @@ fun SettingsScreen(
                             unfocusedBorderColor = tokens.glassBorder
                         )
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Live Stats Preview
+                    if (restoreStats != null) {
+                        val stats = restoreStats!!
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(SuccessGreen.copy(alpha = 0.12f))
+                                .border(BorderStroke(1.dp, SuccessGreen.copy(alpha = 0.3f)), RoundedCornerShape(12.dp))
+                                .padding(10.dp)
+                        ) {
+                            Column {
+                                Text(
+                                    text = "اطلاعات قابل بازیابی یافت شد:",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = SuccessGreen
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "• ${stats["projects"] ?: 0} پروژه  • ${stats["clients"] ?: 0} کارفرما  • ${stats["receipts"] ?: 0} دریافتی  • ${stats["workdays"] ?: 0} روز کاری",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    } else if (restoreInputJson.isNotBlank()) {
+                        Text(
+                            text = "فرمت متن وارد شده معتبر نیست. لطفاً متن پشتیبان کامل را قرار دهید.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -224,16 +311,16 @@ fun SettingsScreen(
 
                         Button(
                             onClick = {
-                                if (restoreInputJson.isNotBlank()) {
+                                if (restoreInputJson.isNotBlank() && restoreStats != null) {
                                     viewModel.restoreBackup(restoreInputJson)
                                     showRestoreDialog = false
                                 }
                             },
-                            enabled = restoreInputJson.isNotBlank(),
+                            enabled = restoreStats != null,
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.testTag("execute_restore_button")
                         ) {
-                            Text("شروع بازیابی")
+                            Text("تأیید و بازیابی")
                         }
                     }
                 }
@@ -258,14 +345,14 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "شخصی‌سازی ظاهر و مدیریت پشتیبان‌گیری داده‌ها",
+                    text = "پوسته‌های رنگی، تم تاریک/روشن و پشتیبان‌گیری",
                     style = MaterialTheme.typography.bodyMedium,
                     color = tokens.textMuted
                 )
             }
         }
 
-        // Section 1: Appearance & Theme
+        // Section 1: Appearance & Theme Palettes
         item {
             GlassCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -285,7 +372,7 @@ fun SettingsScreen(
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "تنظیمات ظاهری و پوسته (Theme)",
+                            text = "تنظیمات ظاهری و تم رنگی",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -294,6 +381,7 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Dark Mode Toggle
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -315,7 +403,7 @@ fun SettingsScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "طراحی شیشه‌ای با کنتراست دقیق و شفافیت کنترل‌شده",
+                                    text = "طراحی شیشه‌ای Glassmorphism با کنتراست بهینه",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = tokens.textMuted
                                 )
@@ -331,6 +419,107 @@ fun SettingsScreen(
                             ),
                             modifier = Modifier.testTag("theme_switch")
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = tokens.glassBorder)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Theme Palettes (چند رنگ متفاوت تم برنامه)
+                    Text(
+                        text = "انتخاب رنگ اصلی تم برنامه:",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "می‌توانید رنگ غالب برنامه را متناسب با سلیقه خود انتخاب کنید:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = tokens.textMuted
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ThemePalette.values().forEach { palette ->
+                            val isSelected = (palette == selectedPalette)
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(
+                                        if (isSelected) {
+                                            palette.previewColor.copy(alpha = if (tokens.isDark) 0.25f else 0.12f)
+                                        } else {
+                                            tokens.glassSurfaceVariant.copy(alpha = 0.35f)
+                                        }
+                                    )
+                                    .border(
+                                        BorderStroke(
+                                            width = if (isSelected) 2.dp else 1.dp,
+                                            color = if (isSelected) palette.previewColor else tokens.glassBorder
+                                        ),
+                                        RoundedCornerShape(14.dp)
+                                    )
+                                    .clickable { viewModel.setThemePalette(palette) }
+                                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                                    .testTag("palette_item_${palette.name}")
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        // Color Swatch
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(palette.previewColor)
+                                                .border(BorderStroke(1.5.dp, Color.White), CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (isSelected) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    tint = Color.White,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.width(12.dp))
+
+                                        Column {
+                                            Text(
+                                                text = palette.title,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = palette.description,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = tokens.textMuted
+                                            )
+                                        }
+                                    }
+
+                                    if (isSelected) {
+                                        Text(
+                                            text = "فعال",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = palette.previewColor
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -366,7 +555,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "اطلاعات شما به‌صورت کاملاً دائمی و ایمن در حافظه داخلی ذخیره می‌شود. جهت اطمینان بیشتر، می‌توانید نسخه پشتیبان تهیه کنید.",
+                        text = "اطلاعات شما به‌صورت کاملاً دائمی و ایمن در پایگاه داده داخلی نگهداری می‌شود. جهت اطمینان بیشتر، در هر زمان می‌توانید فایل پشتیبان تهیه کنید یا اطلاعات قبلی را بازیابی نمایید.",
                         style = MaterialTheme.typography.bodySmall,
                         color = tokens.textMuted
                     )
@@ -416,7 +605,7 @@ fun SettingsScreen(
             }
         }
 
-        // Section 3: App Information & Typography
+        // Section 3: App Information & Technical Details
         item {
             GlassCard(
                 modifier = Modifier.fillMaxWidth(),
@@ -429,14 +618,14 @@ fun SettingsScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Default.Plumbing,
                             contentDescription = null,
-                            tint = tokens.textMuted,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "مشخصات فنی و تایپوگرافی",
+                            text = "حسابداری لوله کشی و تأسیسات",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -446,25 +635,25 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "• فونت اختصاصی: وزیرمتن (Vazirmatn) برای تمام اوزان",
+                        text = "• نسخه برنامه: ۱.۰.۲",
                         style = MaterialTheme.typography.bodySmall,
                         color = tokens.textMuted
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "• پایگاه داده: Room با ذخیره‌سازی محلی و ایزوله",
+                        text = "• فونت اختصاصی: وزیرمتن (Vazirmatn) با پشتیبانی کامل از زبان فارسی",
                         style = MaterialTheme.typography.bodySmall,
                         color = tokens.textMuted
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "• طراحی رابط کاربری: Jetpack Compose و Material 3 با متدولوژی Glassmorphism",
+                        text = "• سبک طراحی: Glassmorphism مدرن با سطوح بلورین و کنتراست بالا",
                         style = MaterialTheme.typography.bodySmall,
                         color = tokens.textMuted
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "• نسخه برنامه: ۱.۰.۰",
+                        text = "• پایگاه داده: Room محلی با قابلیت پشتیبان‌گیری و بازیابی کامل",
                         style = MaterialTheme.typography.bodySmall,
                         color = tokens.textMuted
                     )

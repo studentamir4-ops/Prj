@@ -18,8 +18,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: MainViewModel = viewModel()
             val isDarkMode by viewModel.isDarkMode.collectAsState()
+            val selectedThemePalette by viewModel.selectedThemePalette.collectAsState()
 
-            MyApplicationTheme(darkTheme = isDarkMode) {
+            MyApplicationTheme(
+                darkTheme = isDarkMode,
+                palette = selectedThemePalette
+            ) {
                 MainScreen(viewModel = viewModel)
             }
         }

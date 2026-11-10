@@ -18,6 +18,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+import android.content.Context
+import com.example.ui.theme.ThemePalette
+
 enum class DashboardFilter(val title: String) {
     TODAY("روزانه"),
     THIS_WEEK("هفتگی"),
@@ -56,6 +59,7 @@ data class ReceiptDetailItem(
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: AppRepository
+    private val prefs = application.getSharedPreferences("plumbing_accounting_prefs", Context.MODE_PRIVATE)
 
     init {
         val db = AppDatabase.getDatabase(application)
@@ -80,8 +84,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedFilter = MutableStateFlow(DashboardFilter.ALL)
     val selectedFilter: StateFlow<DashboardFilter> = _selectedFilter.asStateFlow()
 
-    private val _isDarkMode = MutableStateFlow(false)
+    private val _isDarkMode = MutableStateFlow(prefs.getBoolean("dark_mode", false))
     val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
+
+    private val initialPalette = try {
+        ThemePalette.valueOf(prefs.getString("theme_palette", ThemePalette.OCEAN_BLUE.name) ?: ThemePalette.OCEAN_BLUE.name)
+    } catch (e: Exception) {
+        ThemePalette.OCEAN_BLUE
+    }
+    private val _selectedThemePalette = MutableStateFlow(initialPalette)
+    val selectedThemePalette: StateFlow<ThemePalette> = _selectedThemePalette.asStateFlow()
 
     private val todayJalali = PersianDateUtils.getTodayJalali()
     private val _calendarYear = MutableStateFlow(todayJalali.year)
@@ -110,7 +122,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleDarkMode() {
-        _isDarkMode.value = !_isDarkMode.value
+        val next = !_isDarkMode.value
+        _isDarkMode.value = next
+        prefs.edit().putBoolean("dark_mode", next).apply()
+    }
+
+    fun setThemePalette(palette: ThemePalette) {
+        _selectedThemePalette.value = palette
+        prefs.edit().putString("theme_palette", palette.name).apply()
+        _userMessage.value = "تم رنگی «${palette.title}» فعال شد"
     }
 
     fun setCalendarMonth(year: Int, month: Int) {
@@ -380,5 +400,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _userMessage.value = "خطا در بازیابی: ${err.localizedMessage}"
             }
         }
+    }
+
+    fun parseBackupStats(jsonString: String): Map<String, Int>? {
+        return repository.parseBackupStats(jsonString)
     }
 }

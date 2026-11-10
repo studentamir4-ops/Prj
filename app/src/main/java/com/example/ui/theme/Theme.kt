@@ -19,7 +19,8 @@ data class GlassThemeTokens(
     val backgroundGradient: Brush,
     val cardGradient: Brush,
     val textMuted: Color,
-    val isDark: Boolean
+    val isDark: Boolean,
+    val activePalette: ThemePalette
 )
 
 val LocalGlassTokens = staticCompositionLocalOf {
@@ -30,60 +31,62 @@ val LocalGlassTokens = staticCompositionLocalOf {
         backgroundGradient = Brush.verticalGradient(listOf(LightBackgroundStart, LightBackgroundEnd)),
         cardGradient = GlassGradientLight,
         textMuted = LightTextMuted,
-        isDark = false
+        isDark = false,
+        activePalette = ThemePalette.OCEAN_BLUE
     )
 }
-
-private val DarkColorScheme = darkColorScheme(
-    primary = DarkPrimary,
-    onPrimary = Color.Black,
-    primaryContainer = Color(0xFF1E3A5F),
-    onPrimaryContainer = Color(0xFFD0E4FF),
-    secondary = DarkSecondary,
-    onSecondary = Color.Black,
-    secondaryContainer = Color(0xFF0F3B5F),
-    onSecondaryContainer = Color(0xFFBCE9FF),
-    tertiary = DarkTertiary,
-    onTertiary = Color.Black,
-    background = DarkBackgroundStart,
-    onBackground = DarkOnBackground,
-    surface = DarkGlassSurface,
-    onSurface = DarkOnSurface,
-    surfaceVariant = DarkGlassSurfaceVariant,
-    onSurfaceVariant = DarkOnSurface,
-    outline = DarkGlassBorder,
-    error = ErrorRed,
-    onError = Color.White
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = LightPrimary,
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFFDBEAFE),
-    onPrimaryContainer = Color(0xFF1E3A8A),
-    secondary = LightSecondary,
-    onSecondary = Color.White,
-    secondaryContainer = Color(0xFFCCFBF1),
-    onSecondaryContainer = Color(0xFF115E59),
-    tertiary = LightTertiary,
-    onTertiary = Color.White,
-    background = LightBackgroundStart,
-    onBackground = LightOnBackground,
-    surface = LightGlassSurface,
-    onSurface = LightOnSurface,
-    surfaceVariant = LightGlassSurfaceVariant,
-    onSurfaceVariant = LightOnSurface,
-    outline = LightGlassBorder,
-    error = ErrorRed,
-    onError = Color.White
-)
 
 @Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    palette: ThemePalette = ThemePalette.OCEAN_BLUE,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = if (darkTheme) {
+        darkColorScheme(
+            primary = palette.darkPrimary,
+            onPrimary = Color.Black,
+            primaryContainer = palette.darkContainer,
+            onPrimaryContainer = Color.White,
+            secondary = palette.darkSecondary,
+            onSecondary = Color.Black,
+            secondaryContainer = palette.darkContainer,
+            onSecondaryContainer = Color.White,
+            tertiary = palette.darkSecondary,
+            onTertiary = Color.Black,
+            background = DarkBackgroundStart,
+            onBackground = DarkOnBackground,
+            surface = DarkGlassSurface,
+            onSurface = DarkOnSurface,
+            surfaceVariant = DarkGlassSurfaceVariant,
+            onSurfaceVariant = DarkOnSurface,
+            outline = DarkGlassBorder,
+            error = ErrorRed,
+            onError = Color.White
+        )
+    } else {
+        lightColorScheme(
+            primary = palette.lightPrimary,
+            onPrimary = Color.White,
+            primaryContainer = palette.lightContainer,
+            onPrimaryContainer = palette.lightPrimary,
+            secondary = palette.lightSecondary,
+            onSecondary = Color.White,
+            secondaryContainer = palette.lightContainer,
+            onSecondaryContainer = palette.lightPrimary,
+            tertiary = palette.lightSecondary,
+            onTertiary = Color.White,
+            background = LightBackgroundStart,
+            onBackground = LightOnBackground,
+            surface = LightGlassSurface,
+            onSurface = LightOnSurface,
+            surfaceVariant = LightGlassSurfaceVariant,
+            onSurfaceVariant = LightOnSurface,
+            outline = LightGlassBorder,
+            error = ErrorRed,
+            onError = Color.White
+        )
+    }
 
     val glassTokens = if (darkTheme) {
         GlassThemeTokens(
@@ -95,7 +98,8 @@ fun MyApplicationTheme(
             ),
             cardGradient = GlassGradientDark,
             textMuted = DarkTextMuted,
-            isDark = true
+            isDark = true,
+            activePalette = palette
         )
     } else {
         GlassThemeTokens(
@@ -107,7 +111,8 @@ fun MyApplicationTheme(
             ),
             cardGradient = GlassGradientLight,
             textMuted = LightTextMuted,
-            isDark = false
+            isDark = false,
+            activePalette = palette
         )
     }
 

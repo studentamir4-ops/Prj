@@ -5,16 +5,16 @@ import urllib.parse
 
 PORT = 3000
 RELEASES_DIR = "/app/applet/releases"
-APK_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.1.apk")
-ZIP_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.1-apk.zip")
-BIN_FILE = os.path.join(RELEASES_DIR, "ProjectFinance-v1.0.1.bin")
+APK_FILE = os.path.join(RELEASES_DIR, "PlumbingAccounting-v1.0.2.apk")
+ZIP_FILE = os.path.join(RELEASES_DIR, "PlumbingAccounting-v1.0.2-apk.zip")
+BIN_FILE = os.path.join(RELEASES_DIR, "PlumbingAccounting-v1.0.2.bin")
 
 HTML_PAGE = """<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دانلود مستقیم برنامه مدیریت پروژه و مالی</title>
+    <title>دانلود مستقیم برنامه حسابداری لوله کشی</title>
     <style>
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -99,12 +99,12 @@ HTML_PAGE = """<!DOCTYPE html>
 </head>
 <body>
     <div class="card">
-        <div class="badge">نسخه ۱.۰.۱ آماده نصب (با اصلاح کامل Swipe Actions)</div>
-        <h1>مدیریت پروژه و مالی</h1>
-        <p>نرم‌افزار جامع مدیریت پروژه‌ها، کارفرمایان و دریافتی‌ها با طراحی مدرن Glassmorphism و تقویم شمسی</p>
+        <div class="badge">نسخه ۱.۰.۲ آماده نصب (حسابداری لوله کشی)</div>
+        <h1>حسابداری لوله کشی</h1>
+        <p>نرم‌افزار جامع مدیریت پروژه‌های لوله‌کشی، کارفرمایان، دریافتی‌ها و روزهای کاری با تم‌های رنگی متنوع و پشتیبان‌گیری</p>
         
         <a href="/download-apk" class="btn">
-            📥 دانلود مستقیم فایل APK (۲۲ مگابایت)
+            📥 دانلود مستقیم فایل APK (۲۳ مگابایت)
         </a>
 
         <a href="/download-zip" class="btn btn-secondary">
@@ -112,8 +112,11 @@ HTML_PAGE = """<!DOCTYPE html>
         </a>
 
         <div class="info-box">
-            <b>راهنمای نصب در گوشی:</b><br>
-            پس از دانلود، روی دکمه Open یا فایلی که دانلود شده کلیک کنید. در صورت مشاهده پیام امنیتی، گزینه Allow from this source را تایید کنید تا نصب انجام شود.
+            <b>امکانات جدید نسخه ۱.۰.۲:</b><br>
+            • اصلاح کامل دکمه‌های ویرایش و حذف (دیگر هرگز زیر ردیف قرار نمی‌گیرند)<br>
+            • تغییر نام رسمی برنامه به «حسابداری لوله کشی»<br>
+            • ۶ تم رنگی متنوع (آبی، سبز تأسیساتی، مسی لوله‌کشی، سرمه‌ای، زرشکی، بنفش)<br>
+            • قابلیت پشتیبان‌گیری کامل (JSON + اشتراک‌گذاری) و بازیابی با پیش‌نمایش آماری
         </div>
     </div>
 </body>
@@ -123,12 +126,12 @@ HTML_PAGE = """<!DOCTYPE html>
 class DownloadHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         url = urllib.parse.urlparse(self.path).path
-        if url == "/download-apk" or url == "/ProjectFinance-v1.0.0.apk":
-            self.serve_file(APK_FILE, "application/vnd.android.package-archive", "ProjectFinance-v1.0.0.apk")
-        elif url == "/download-zip" or url == "/ProjectFinance-v1.0.0-apk.zip":
-            self.serve_file(ZIP_FILE, "application/zip", "ProjectFinance-v1.0.0-apk.zip")
-        elif url == "/download-bin" or url == "/ProjectFinance-v1.0.0.bin":
-            self.serve_file(BIN_FILE, "application/octet-stream", "ProjectFinance-v1.0.0.bin")
+        if url == "/download-apk" or "PlumbingAccounting" in url or ".apk" in url:
+            self.serve_file(APK_FILE, "application/vnd.android.package-archive", "PlumbingAccounting-v1.0.2.apk")
+        elif url == "/download-zip" or ".zip" in url:
+            self.serve_file(ZIP_FILE, "application/zip", "PlumbingAccounting-v1.0.2-apk.zip")
+        elif url == "/download-bin" or ".bin" in url:
+            self.serve_file(BIN_FILE, "application/octet-stream", "PlumbingAccounting-v1.0.2.bin")
         else:
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")

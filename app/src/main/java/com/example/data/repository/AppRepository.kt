@@ -88,23 +88,23 @@ class AppRepository(private val database: AppDatabase) {
         if (existingClients.isEmpty()) {
             val client1Id = clientDao.insertClient(
                 ClientEntity(
-                    name = "شرکت فناوران نوین",
+                    name = "مهندس رضایی (مجری مجتمع نسترن)",
                     phone = "09121234567",
-                    address = "تهران، خیابان ولیعصر، برج سپهر"
+                    address = "تهران، خیابان ولیعصر، مجتمع نسترن"
                 )
             )
             val client2Id = clientDao.insertClient(
                 ClientEntity(
-                    name = "استودیو طراحی افق",
+                    name = "شرکت ساختمانی افق عمران",
                     phone = "09359876543",
-                    address = "اصفهان، میدان آزادی"
+                    address = "اصفهان، شهرک صنعتی، برج سازه"
                 )
             )
             val client3Id = clientDao.insertClient(
                 ClientEntity(
-                    name = "دکتر جلالی",
+                    name = "دکتر جلالی (کلینیک ارم)",
                     phone = "09131112233",
-                    address = "شیراز، بلوار ارم"
+                    address = "شیراز، بلوار ارم، پلاک ۴۲"
                 )
             )
 
@@ -114,13 +114,13 @@ class AppRepository(private val database: AppDatabase) {
             // Projects: default 15% share or custom
             val proj1Id = projectDao.insertProject(
                 ProjectEntity(
-                    title = "طراحی و توسعه پلتفرم تجارت الکترونیک",
+                    title = "لوله‌کشی آب و فاضلاب مجتمع مسکونی نسترن (۱۰ واحد)",
                     clientId = client1Id,
                     totalAmount = 120_000_000L,
                     myShareType = ProjectEntity.SHARE_TYPE_PERCENTAGE,
                     mySharePercentage = 15.0,
                     myShareCalculated = 18_000_000L,
-                    description = "توسعه فرانت‌اند و بک‌اند با رعایت آخرین استانداردها",
+                    description = "اجرای لوله‌کشی پنج‌لایه نیوپایپ و پوش‌فیت پلی‌ران با تست فشار",
                     status = ProjectEntity.STATUS_IN_PROGRESS,
                     startDate = "1405/07/01",
                     endDate = "1405/09/30"
@@ -129,13 +129,13 @@ class AppRepository(private val database: AppDatabase) {
 
             val proj2Id = projectDao.insertProject(
                 ProjectEntity(
-                    title = "بازطراحی اپلیکیشن موبایل سازمانی",
+                    title = "اجرای تأسیسات موتورخانه و سیستم گرمایش برج سپهر",
                     clientId = client2Id,
                     totalAmount = 80_000_000L,
                     myShareType = ProjectEntity.SHARE_TYPE_CUSTOM,
                     customAmount = 25_000_000L,
                     myShareCalculated = 25_000_000L,
-                    description = "طراحی رابط کاربری Glassmorphism در فلاتر و اندروید",
+                    description = "نصب دیگ چدنی، کلکتورهای اصلی و پمپ‌های سیرکولاتور گراندفوس",
                     status = ProjectEntity.STATUS_COMPLETED,
                     startDate = "1405/06/15",
                     endDate = "1405/08/01"
@@ -144,13 +144,13 @@ class AppRepository(private val database: AppDatabase) {
 
             projectDao.insertProject(
                 ProjectEntity(
-                    title = "سامانه نوبت‌دهی آنلاین کلینیک",
+                    title = "لوله‌کشی گاز توکار و پکیج کلینیک تخصصی",
                     clientId = client3Id,
                     totalAmount = 50_000_000L,
                     myShareType = ProjectEntity.SHARE_TYPE_PERCENTAGE,
                     mySharePercentage = 15.0,
                     myShareCalculated = 7_500_000L,
-                    description = "طراحی سایت وردپرسی سفارشی و پنل پیامک",
+                    description = "اجرای خطوط گاز استاندارد سازمان نظام مهندسی با لوله مانیسمان",
                     status = ProjectEntity.STATUS_IN_PROGRESS,
                     startDate = "1405/08/01",
                     endDate = "1405/08/25"
@@ -163,7 +163,7 @@ class AppRepository(private val database: AppDatabase) {
                     amount = 15_000_000L,
                     date = todayStr,
                     paymentMethod = "پایا",
-                    description = "پیش‌پرداخت قسط اول پلتفرم تجارت الکترونیک",
+                    description = "پیش‌پرداخت قسط اول لوله‌کشی فاضلاب مجتمع نسترن",
                     projectId = proj1Id
                 )
             )
@@ -173,7 +173,7 @@ class AppRepository(private val database: AppDatabase) {
                     amount = 25_000_000L,
                     date = "1405/07/20",
                     paymentMethod = "کارت به کارت",
-                    description = "تسویه کامل پروژه بازطراحی اپلیکیشن",
+                    description = "تسویه کامل مرحله دوم تأسیسات موتورخانه",
                     projectId = proj2Id
                 )
             )
@@ -183,7 +183,7 @@ class AppRepository(private val database: AppDatabase) {
                     amount = 5_000_000L,
                     date = todayStr,
                     paymentMethod = "انتقال ساتنا",
-                    description = "مشاوره فنی خارج از پروژه",
+                    description = "دستمزد عیب‌یابی و رفع نشتی لوله‌کشی",
                     projectId = null
                 )
             )
@@ -298,6 +298,11 @@ class AppRepository(private val database: AppDatabase) {
                 return Result.failure(IllegalArgumentException("فرمت فایل پشتیبان نامعتبر است"))
             }
 
+            var cCount = 0
+            var pCount = 0
+            var rCount = 0
+            var wCount = 0
+
             // Restore clients
             val clientsArray = root.optJSONArray("clients")
             if (clientsArray != null) {
@@ -310,6 +315,7 @@ class AppRepository(private val database: AppDatabase) {
                         createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                     )
                     clientDao.insertClient(client)
+                    cCount++
                 }
             }
 
@@ -333,6 +339,7 @@ class AppRepository(private val database: AppDatabase) {
                         createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                     )
                     projectDao.insertProject(project)
+                    pCount++
                 }
             }
 
@@ -351,6 +358,7 @@ class AppRepository(private val database: AppDatabase) {
                         createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                     )
                     receiptDao.insertReceipt(receipt)
+                    rCount++
                 }
             }
 
@@ -371,13 +379,28 @@ class AppRepository(private val database: AppDatabase) {
                             createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                         )
                         workdayDao.insertWorkday(workday)
+                        wCount++
                     }
                 }
             }
 
-            Result.success("اطلاعات با موفقیت بازیابی شد")
+            Result.success("بازیابی با موفقیت انجام شد ($pCount پروژه، $cCount کارفرما، $rCount دریافتی، $wCount روز کاری)")
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    fun parseBackupStats(jsonString: String): Map<String, Int>? {
+        return try {
+            val root = JSONObject(jsonString)
+            mapOf(
+                "projects" to (root.optJSONArray("projects")?.length() ?: 0),
+                "clients" to (root.optJSONArray("clients")?.length() ?: 0),
+                "receipts" to (root.optJSONArray("receipts")?.length() ?: 0),
+                "workdays" to (root.optJSONArray("workdays")?.length() ?: 0)
+            )
+        } catch (e: Exception) {
+            null
         }
     }
 }
